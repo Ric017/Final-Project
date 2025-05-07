@@ -1,0 +1,36 @@
+package com.mycompany.parkinglotsystem;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+
+public class DataCollectionScript {
+
+    private ParkingLot parkingLot;
+    private TicketingSystem ticketingSystem;
+    private PaymentSystem paymentSystem;
+    private final String logFilePath = "parking_data_log.txt";
+
+    public DataCollectionScript(ParkingLot parkingLot, TicketingSystem ticketingSystem, PaymentSystem paymentSystem) {
+        this.parkingLot = parkingLot;
+        this.ticketingSystem = ticketingSystem;
+        this.paymentSystem = paymentSystem;
+    }
+
+    // Method to run the data collection (simulating data write to file)
+    public void run() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFilePath, true))) {
+            // Log vehicle entry
+            writer.write("Vehicle " + ticketingSystem.getVehicleId() + " entered the parking lot at " + LocalDateTime.now() + "\n");
+            
+            // Log vehicle exit
+            writer.write("Vehicle " + ticketingSystem.getVehicleId() + " exited the parking lot at " + LocalDateTime.now() + "\n");
+            
+            // Log payment processing
+            writer.write("Payment processed for vehicle " + ticketingSystem.getVehicleId() + " at " + LocalDateTime.now() + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
