@@ -1,0 +1,118 @@
+package com.mycompany.parkinglotsystem;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
+
+public class ParkingLot {
+    private int totalSpots;
+    private int availableSpots;
+    private String[] parkingStatus;
+    private TicketingSystem[] ticketSystems;
+    private double totalRevenue;
+    private List<TicketingSystem> ticketHistory;
+
+    public ParkingLot(int totalSpots) {
+        this.totalSpots = totalSpots;
+        this.availableSpots = totalSpots;
+        this.parkingStatus = new String[totalSpots];
+        this.ticketSystems = new TicketingSystem[totalSpots];
+        this.ticketHistory = new ArrayList<>();
+        this.totalRevenue = 0.0;
+    }
+
+    // Update: assignSpot method with vehicleType
+    public void assignSpot(String vehicleId, String vehicleType) {
+        if (availableSpots > 0) {
+            for (int i = 0; i < parkingStatus.length; i++) {
+                if (parkingStatus[i] == null) {
+                    parkingStatus[i] = vehicleId;
+                    TicketingSystem ticket = new TicketingSystem(vehicleId, vehicleType);
+                    ticket.setEntryTime();
+                    ticketSystems[i] = ticket;
+                    availableSpots--;
+                    System.out.println("Assigned Spot " + (i + 1) + " to " + vehicleId + " (" + vehicleType + ")");
+                    return;
+                }
+            }
+        } else {
+            System.out.println("Parking Lot Full! Cannot assign spot.");
+        }
+    }
+
+    // Update: processPayment method with spot number and amount
+    public void processPayment(int spotNumber, double amount) {
+        if (spotNumber > 0 && spotNumber <= totalSpots && parkingStatus[spotNumber - 1] != null) {
+            TicketingSystem ticket = ticketSystems[spotNumber - 1];
+            double fee = ticket.calculateParkingFee();
+            if (amount >= fee) {
+                totalRevenue += fee;
+                System.out.println("Payment of $" + fee + " received for " + parkingStatus[spotNumber - 1]);
+                System.out.println("Change: $" + (amount - fee));
+            } else {
+                System.out.println("Insufficient payment! Please pay the full amount of $" + fee);
+            }
+        } else {
+            System.out.println("Invalid spot or vehicle not found.");
+        }
+    }
+
+    // Admin summary of revenue and average parking duration
+    public void showAdminSummary() {
+        System.out.println("\n--- Admin Summary ---");
+        System.out.println("Total Revenue: $" + String.format("%.2f", totalRevenue));
+        long totalMinutes = 0;
+        for (TicketingSystem ticket : ticketHistory) {
+            Duration duration = Duration.between(ticket.getEntryTime(), ticket.getExitTime());
+            totalMinutes += duration.toMinutes();
+        }
+        if (!ticketHistory.isEmpty()) {
+            double avgDuration = (double) totalMinutes / ticketHistory.size();
+            System.out.println("Average Parking Duration: " + String.format("%.2f", avgDuration) + " minutes");
+        } else {
+            System.out.println("No vehicles have exited yet.");
+        }
+    }
+
+    // Method to show the parking availability dashboard
+    public void showAvailability() {
+        System.out.println("Available spots: " + availableSpots + " / " + totalSpots);
+        for (int i = 0; i < parkingStatus.length; i++) {
+            if (parkingStatus[i] != null) {
+                System.out.println("Spot " + (i + 1) + ": Occupied by " + parkingStatus[i]);
+            } else {
+                System.out.println("Spot " + (i + 1) + ": Available");
+            }
+        }
+    }
+
+    // Method to exit vehicle from the parking lot
+    public void exitVehicle(int spotNumber) {
+        if (spotNumber > 0 && spotNumber <= totalSpots) {
+            if (parkingStatus[spotNumber - 1] != null) {
+                TicketingSystem ticket = ticketSystems[spotNumber - 1];
+                ticket.setExitTime();
+                ticket.showTicketDetails();
+                ticketHistory.add(ticket);
+                parkingStatus[spotNumber - 1] = null;
+                ticketSystems[spotNumber - 1] = null;
+                availableSpots++;
+            } else {
+                System.out.println("Spot " + spotNumber + " is already vacant.");
+            }
+        } else {
+            System.out.println("Invalid spot number.");
+        }
+    }
+
+    // Method to search for a vehicle by its ID
+    public void findVehicle(String vehicleId) {
+        for (int i = 0; i < parkingStatus.length; i++) {
+            if (vehicleId.equals(parkingStatus[i])) {
+                System.out.println("Vehicle " + vehicleId + " is parked at Spot " + (i + 1));
+                return;
+            }
+        }
+        System.out.println("Vehicle " + vehicleId + " not found.");
+    }
+}
