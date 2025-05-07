@@ -1,0 +1,211 @@
+package com.mycompany.parkinglotsystem.test;
+
+import com.mycompany.parkinglotsystem.ParkingLot;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ParkingLotTest {
+
+    private ParkingLot parkingLot;
+
+    @BeforeEach
+    void setUp() {
+        // Initialize the ParkingLot instance before each test, with 5 spots for testing
+        parkingLot = new ParkingLot(5);
+    }
+
+    @Test
+    void testAssignSpot() {
+        // Assign a vehicle to a spot and verify it's assigned correctly
+        Integer spot = parkingLot.assignSpot("ABC123");
+        assertNotNull(spot, "Spot should be assigned");
+        assertEquals(4, parkingLot.getAvailableSpots(), "There should be 4 available spots after assignment.");
+    }
+
+    @Test
+    void testAssignSpotWhenFull() {
+        // Fill the parking lot
+        parkingLot.assignSpot("ABC123");
+        parkingLot.assignSpot("XYZ456");
+        parkingLot.assignSpot("LMN789");
+        parkingLot.assignSpot("PQR321");
+        parkingLot.assignSpot("DEF654");
+
+        // Try to assign another vehicle when the lot is full
+        Integer spot = parkingLot.assignSpot("GHI987");
+        assertNull(spot, "Parking lot is full, no spot should be assigned.");
+    }
+
+    @Test
+    void testExitVehicle() {
+        // Assign a vehicle to a spot
+        parkingLot.assignSpot("ABC123");
+
+        // Exit the vehicle and check availability
+        parkingLot.exitVehicle(1);
+        assertEquals(5, parkingLot.getAvailableSpots(), "There should be 5 available spots after exit.");
+    }
+
+    @Test
+    void testExitVehicleInvalidSpot() {
+        // Try exiting a vehicle from an invalid spot (outside valid range)
+        parkingLot.exitVehicle(6);  // Spot 6 doesn't exist
+        parkingLot.exitVehicle(0);  // Spot 0 is invalid
+        assertEquals(5, parkingLot.getAvailableSpots(), "Available spots should not change for invalid exits.");
+    }
+
+    @Test
+    void testShowAvailability() {
+        // Assign a vehicle and verify availability
+        parkingLot.assignSpot("ABC123");
+        String availability = getAvailabilityString(parkingLot);
+        assertTrue(availability.contains("Spot 1: Occupied by vehicle ABC123"), "Spot 1 should show as occupied.");
+    }
+
+    private String getAvailabilityString(ParkingLot lot) {
+        // Helper function to capture and return the parking lot availability output
+        final java.io.ByteArrayOutputStream outContent = new java.io.ByteArrayOutputStream();
+        System.setOut(new java.io.PrintStream(outContent));
+        lot.showAvailability();
+        return outContent.toString();
+    }
+}
+
+package com.mycompany.parkinglotsystem.test;
+
+import com.mycompany.parkinglotsystem.TicketingSystem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class TicketingSystemTest {
+
+    private TicketingSystem ticketingSystem;
+
+    @BeforeEach
+    public void setUp() {
+        // Create a new TicketingSystem before each test
+        ticketingSystem = new TicketingSystem("ABC123");
+    }
+
+    @Test
+    public void testSetEntryTime() {
+        // Set entry time
+        ticketingSystem.setEntryTime();
+        
+        // Ensure that the entry time is not null and is set
+        assertNotNull(ticketingSystem.getEntryTime());
+    }
+
+    @Test
+    public void testSetExitTime() {
+        // Set exit time
+        ticketingSystem.setExitTime();
+        
+        // Ensure that the exit time is not null and is set
+        assertNotNull(ticketingSystem.getExitTime());
+    }
+
+    @Test
+    public void testShowTicketDetails() {
+        // Test for ticket details when both entry and exit times are set
+        ticketingSystem.setEntryTime();
+        ticketingSystem.setExitTime();
+
+        // Test output (you could also capture the output using a PrintStream to verify the content)
+        ticketingSystem.showTicketDetails();
+    }
+
+    @Test
+    public void testShowTicketDetailsWithoutTimes() {
+        // Test for ticket details when entry and exit times are not set
+        ticketingSystem.showTicketDetails();  // This should print a message saying no entry or exit times are available
+    }
+
+    @Test
+    public void testSetExitTimeBeforeEntry() {
+        // Try setting the exit time before entry time
+        ticketingSystem.setExitTime();  // Try setting exit time before entry time
+        assertNull(ticketingSystem.getExitTime(), "Exit time should not be set before entry time.");
+    }
+}
+
+package com.mycompany.parkinglotsystem.test;
+
+import com.mycompany.parkinglotsystem.ParkingLot;
+import com.mycompany.parkinglotsystem.TicketingSystem;
+import com.mycompany.parkinglotsystem.PaymentSystem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class PaymentSystemTest {
+
+    private ParkingLot parkingLot;
+    private TicketingSystem ticket;
+    private PaymentSystem paymentSystem;
+
+    @BeforeEach
+    public void setUp() {
+        // Mock the ParkingLot and TicketingSystem dependencies
+        parkingLot = mock(ParkingLot.class);
+        ticket = mock(TicketingSystem.class);
+
+        // Create the PaymentSystem with mocked dependencies
+        paymentSystem = new PaymentSystem(parkingLot, ticket);
+    }
+
+    @Test
+    public void testIssueTicketAndProcessPaymentWithTicket() {
+        // Mock a valid ticket with set entry and exit times
+        when(ticket.getEntryTime()).thenReturn("2025-05-07 10:00");
+        when(ticket.getExitTime()).thenReturn("2025-05-07 12:00");
+
+        // Simulate a payment
+        double paymentAmount = 10.50;
+        String vehicleId = "XYZ123";
+        
+        // Capture the output (you might need to redirect stdout to check this)
+        paymentSystem.issueTicketAndProcessPayment(vehicleId, paymentAmount);
+
+        // Verify that payment processing and ticketing occurred
+        verify(ticket, times(1)).showTicketDetails();  // Assumes that showTicketDetails would be called
+    }
+
+    @Test
+    public void testIssueTicketAndProcessPaymentNoTicket() {
+        // Simulate the case where no ticket has been issued yet
+        when(ticket.getEntryTime()).thenReturn(null);
+        when(ticket.getExitTime()).thenReturn(null);
+
+        double paymentAmount = 15.00;
+        String vehicleId = "ABC789";
+        
+        // Simulate trying to process payment without a valid ticket
+        paymentSystem.issueTicketAndProcessPayment(vehicleId, paymentAmount);
+
+        // Verify that the system prints the message "No entry or exit times available..."
+        verify(ticket, times(1)).showTicketDetails();  // Should show a message about missing ticket times
+    }
+
+    @Test
+    public void testProcessPaymentWithIncorrectAmount() {
+        // Simulate processing payment with an incorrect amount (less than due)
+        when(ticket.getExitTime()).thenReturn("2025-05-07 12:00");
+        when(ticket.getEntryTime()).thenReturn("2025-05-07 10:00");
+
+        double paymentAmount = 5.00;  // Not enough
+        String vehicleId = "LMN123";
+        
+        // Simulate a payment with insufficient amount
+        assertThrows(IllegalArgumentException.class, () -> paymentSystem.issueTicketAndProcessPayment(vehicleId, paymentAmount));
+    }
+}
+
+
+
