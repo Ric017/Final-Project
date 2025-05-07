@@ -1,0 +1,17 @@
+package com.mycompany.parkinglotsystem;
+
+public class PaymentSystem {
+    private ParkingLot parkingLot;
+    private TicketingSystem ticket;
+
+    public PaymentSystem(ParkingLot parkingLot, TicketingSystem ticket) {
+        this.parkingLot = parkingLot;
+        this.ticket = ticket;
+    }
+
+    public void issueTicketAndProcessPayment(String vehicleId, double payment) {
+        // Assuming the ticket is already available in the parking lot
+        ticket.showTicketDetails();
+        System.out.println("Payment of $" + payment + " processed.");
+    }
+}
