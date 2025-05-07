@@ -1,0 +1,77 @@
+package com.mycompany.parkinglotsystem;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.List;
+
+public class DataCollectionScript {
+
+    public static void main(String[] args) {
+        // Create a ParkingLot with 10 spots (example)
+        ParkingLot parkingLot = new ParkingLot(10);
+
+        // Create a PaymentSystem instance for handling payment and ticketing
+        PaymentSystem paymentSystem = new PaymentSystem(parkingLot, null); // Payment system will reference the ticket later
+        
+        // Simulate vehicle entries, exits, and payments for data collection
+        collectParkingData(parkingLot, paymentSystem);
+    }
+
+    public static void collectParkingData(ParkingLot parkingLot, PaymentSystem paymentSystem) {
+        // Sample vehicle IDs
+        String[] vehicles = {"ABC123", "XYZ456", "LMN789", "DEF101", "GHI202"};
+        double[] amounts = {5.00, 7.50, 6.00, 8.00, 4.00};  // Example payment amounts for each vehicle
+        
+        // Open file to log the data
+        try (FileWriter writer = new FileWriter("parking_data_log.txt", true)) {
+            // Simulate entry for each vehicle, collect data and make payment
+            for (int i = 0; i < vehicles.length; i++) {
+                String vehicleId = vehicles[i];
+                double amount = amounts[i];
+
+                // Assign a parking spot
+                Integer assignedSpot = parkingLot.assignSpot(vehicleId);
+                if (assignedSpot != null) {
+                    System.out.println("Assigned " + vehicleId + " to spot " + assignedSpot);
+                    
+                    // Create a ticket and set entry time
+                    TicketingSystem ticket = new TicketingSystem(vehicleId);
+                    ticket.setEntryTime();
+                    
+                    // Issue ticket and process payment
+                    paymentSystem.issueTicketAndProcessPayment(vehicleId, amount);
+                    ticket.setExitTime();  // Set the exit time after some simulated parking duration
+                    
+                    // Log ticket data
+                    ticket.showTicketDetails();
+                    
+                    // Simulate exit after a short time
+                    try {
+                        Thread.sleep(1000);  // Simulate parking duration
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    parkingLot.exitVehicle(assignedSpot);
+                } else {
+                    System.out.println("Parking full for vehicle " + vehicleId);
+                }
+            }
+
+            // Collect parking lot availability data
+            parkingLot.showAvailability();
+
+            // Log the data collected
+            writer.write("Data Collection at " + java.time.LocalDateTime.now() + "\n");
+            writer.write("------------------------------------------------------\n");
+            writer.write("Parking Lot Availability and Vehicle Parking Data:\n");
+            for (String vehicle : vehicles) {
+                writer.write("Vehicle " + vehicle + " processed.\n");
+            }
+            writer.write("------------------------------------------------------\n\n");
+            System.out.println("Data collection complete!");
+
+        } catch (IOException e) {
+            System.err.println("Error writing to file: " + e.getMessage());
+        }
+    }
+}
