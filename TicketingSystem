@@ -1,0 +1,64 @@
+package com.mycompany.parkinglotsystem;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+public class TicketingSystem {
+    private String vehicleId;
+    private String vehicleType;
+    private LocalDateTime entryTime;
+    private LocalDateTime exitTime;
+
+    private static final Map<String, Double> RATES = new HashMap<>();
+    static {
+        RATES.put("Car", 2.0);
+        RATES.put("Truck", 3.5);
+        RATES.put("Motorcycle", 1.5);
+    }
+
+    public TicketingSystem(String vehicleId, String vehicleType) {
+        this.vehicleId = vehicleId;
+        this.vehicleType = vehicleType;
+    }
+
+    public void setEntryTime() {
+        this.entryTime = LocalDateTime.now();
+    }
+
+    public void setExitTime() {
+        this.exitTime = LocalDateTime.now();
+    }
+
+    public double calculateParkingFee() {
+        if (entryTime != null && exitTime != null) {
+            long minutes = java.time.Duration.between(entryTime, exitTime).toMinutes();
+            double rate = RATES.getOrDefault(vehicleType, 2.0);
+            return Math.ceil(minutes / 60.0) * rate;
+        }
+        return 0.0;
+    }
+
+    public void showTicketDetails() {
+        System.out.println("Ticket for vehicle: " + vehicleId + " (" + vehicleType + ")");
+        System.out.println("Entry Time: " + entryTime);
+        System.out.println("Exit Time: " + exitTime);
+        System.out.println("Duration: " + java.time.Duration.between(entryTime, exitTime).toMinutes() + " minutes");
+        System.out.println("Fee: $" + String.format("%.2f", calculateParkingFee()));
+    }
+
+    public String getVehicleId() {
+        return vehicleId;
+    }
+
+    public LocalDateTime getEntryTime() {
+        return entryTime;
+    }
+
+    public LocalDateTime getExitTime() {
+        return exitTime;
+    }
+}
+
+
+
