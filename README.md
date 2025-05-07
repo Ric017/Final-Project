@@ -69,7 +69,7 @@ This section provides instructions on how to run the data collection script for 
 
 Make sure the following are set up:
 
-* **Java Development Kit (JDK)** is installed on your system. Download it from [Oracle's website](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html).
+* **Java Development Kit (JDK)** is installed on your system.
 * **NetBeans IDE** (or any Java IDE) is recommended for easy execution of the project.
 
 ### Steps to Run the Data Collection Script:
