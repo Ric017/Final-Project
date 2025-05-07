@@ -1,0 +1,136 @@
+package com.mycompany.parkinglotsystem.test;
+
+import com.mycompany.parkinglotsystem.ParkingLot;
+import com.mycompany.parkinglotsystem.TicketingSystem;
+import com.mycompany.parkinglotsystem.PaymentSystem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class ParkingLotIntegrationTest {
+
+    private ParkingLot parkingLot;
+    private TicketingSystem ticketingSystem;
+    private PaymentSystem paymentSystem;
+
+    @BeforeEach
+    void setUp() {
+        // Set up the components
+        parkingLot = new ParkingLot(5);  // Create a ParkingLot with 5 spots
+        ticketingSystem = mock(TicketingSystem.class);  // Mock the TicketingSystem for simplicity
+        paymentSystem = new PaymentSystem(parkingLot, ticketingSystem);  // Pass dependencies to PaymentSystem
+    }
+
+    @Test
+    void testAssignSpotAndIssueTicket() {
+        String vehicleId = "ABC123";
+
+        // Simulate assigning a parking spot
+        Integer assignedSpot = parkingLot.assignSpot(vehicleId);
+        assertNotNull(assignedSpot, "Parking spot should be assigned.");
+        assertEquals(4, parkingLot.getAvailableSpots(), "There should be 4 spots left after assignment.");
+
+        // Simulate issuing a ticket
+        ticketingSystem.setEntryTime();
+        ticketingSystem.setExitTime();
+        paymentSystem.issueTicketAndProcessPayment(vehicleId, 10.00);
+
+        // Verify that the ticket was issued correctly
+        verify(ticketingSystem, times(1)).showTicketDetails();  // Ensure that ticket details were shown
+    }
+}
+
+package com.mycompany.parkinglotsystem.test;
+
+import com.mycompany.parkinglotsystem.ParkingLot;
+import com.mycompany.parkinglotsystem.TicketingSystem;
+import com.mycompany.parkinglotsystem.PaymentSystem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class PaymentProcessingIntegrationTest {
+
+    private ParkingLot parkingLot;
+    private TicketingSystem ticketingSystem;
+    private PaymentSystem paymentSystem;
+
+    @BeforeEach
+    void setUp() {
+        // Set up the components
+        parkingLot = new ParkingLot(5);  // Parking lot with 5 spots
+        ticketingSystem = mock(TicketingSystem.class);  // Mock ticketing system
+        paymentSystem = new PaymentSystem(parkingLot, ticketingSystem);  // Create payment system
+    }
+
+    @Test
+    void testExitVehicleAndProcessPayment() {
+        String vehicleId = "XYZ123";
+        
+        // Assign a spot for the vehicle
+        Integer spot = parkingLot.assignSpot(vehicleId);
+        assertNotNull(spot, "Parking spot should be assigned.");
+        assertEquals(4, parkingLot.getAvailableSpots(), "There should be 4 spots left.");
+
+        // Simulate vehicle exit and payment
+        parkingLot.exitVehicle(spot);
+        
+        // Verify parking spot is available again
+        assertEquals(5, parkingLot.getAvailableSpots(), "Parking spot should be available after exit.");
+
+        // Simulate payment
+        double paymentAmount = 15.00;
+        paymentSystem.issueTicketAndProcessPayment(vehicleId, paymentAmount);
+
+        // Verify payment processing
+        verify(ticketingSystem, times(1)).showTicketDetails();  // Ensure ticket details were shown
+    }
+}
+
+package com.mycompany.parkinglotsystem.test;
+
+import com.mycompany.parkinglotsystem.ParkingLot;
+import com.mycompany.parkinglotsystem.TicketingSystem;
+import com.mycompany.parkinglotsystem.PaymentSystem;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class FullWorkflowIntegrationTest {
+
+    private ParkingLot parkingLot;
+    private TicketingSystem ticketingSystem;
+    private PaymentSystem paymentSystem;
+
+    @BeforeEach
+    void setUp() {
+        // Set up the components for integration testing
+        parkingLot = new ParkingLot(5);  // Create a ParkingLot with 5 spots
+        ticketingSystem = mock(TicketingSystem.class);  // Mock TicketingSystem
+        paymentSystem = new PaymentSystem(parkingLot, ticketingSystem);  // Pass dependencies to PaymentSystem
+    }
+
+    @Test
+    void testFullParkingAndPaymentWorkflow() {
+        String vehicleId = "DEF456";
+        
+        // Step 1: Vehicle enters the parking lot and is assigned a spot
+        Integer spot = parkingLot.assignSpot(vehicleId);
+        assertNotNull(spot, "Parking spot should be assigned.");
+        assertEquals(4, parkingLot.getAvailableSpots(), "There should be 4 spots left.");
+
+        // Step 2: Vehicle exits and payment is processed
+        parkingLot.exitVehicle(spot);
+        assertEquals(5, parkingLot.getAvailableSpots(), "Parking spot should be available after exit.");
+
+        // Step 3: Simulate payment
+        double paymentAmount = 20.00;
+        paymentSystem.issueTicketAndProcessPayment(vehicleId, paymentAmount);
+
+        // Verify that the ticket was processed and payment system interacted correctly
+        verify(ticketingSystem, times(1)).showTicketDetails();  // Ensure ticket details were shown
+    }
+}
